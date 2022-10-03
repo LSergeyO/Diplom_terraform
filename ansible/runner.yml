@@ -1,0 +1,9 @@
+---
+  - name: Install runner
+    hosts: runner
+    become: yes
+    become_user: root
+    remote_user: ubuntu
+    roles:
+      - runner
+      - ssh

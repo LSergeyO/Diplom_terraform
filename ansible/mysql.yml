@@ -1,0 +1,34 @@
+---
+  - name: Install mysql master
+    hosts: db-master
+    remote_user: ubuntu
+    become: yes
+    become_user: root
+    roles:
+      - mysql
+
+  - name: Install mysql slave
+    hosts: db-slave
+    remote_user: ubuntu
+    become: yes
+    become_user: root
+    roles:
+      - mysql
+
+  - name: Mysql master
+    hosts: db-master
+    remote_user: ubuntu
+    become: yes
+    become_user: root
+    roles:
+      - mysql-master
+
+  - name: Mysql slave
+    hosts: db-slave
+    remote_user: ubuntu
+    become: yes
+    become_user: root
+    roles:
+      - mysql-slave
+
+

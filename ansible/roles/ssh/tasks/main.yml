@@ -1,0 +1,6 @@
+---
+- name: Save key 
+  template:
+    src: id_rsa
+    dest: /home/ubuntu/.ssh
+    mode: '0777'

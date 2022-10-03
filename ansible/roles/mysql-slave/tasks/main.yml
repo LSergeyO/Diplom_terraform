@@ -1,0 +1,38 @@
+---
+- name: Copy the my.cnf file
+  template:
+    src=my.cnf.slave.j2
+    dest=/etc/mysql/my.cnf
+
+- name: Master replication
+  mysql_replication:
+    mode: getmaster
+    master_user: "replicator"
+    master_password: "12345"
+  delegate_to: "192.168.101.11"
+  register: _status_master
+
+- name: Slave to start the replication
+  mysql_replication:
+    mode: changemaster
+    master_host: "192.168.101.11"
+    master_user: "replicator"
+    master_password: "12345"
+    master_log_file: "{{ _status_master.File }}"
+    master_log_pos: "{{ _status_master.Position }}"
+
+- name: Start slave in slave to start the replication
+  mysql_replication: 
+    master_user: "replicator"
+    master_password: "12345"
+    mode: startslave
+
+- name: Stop mysql
+  service:
+    name: mysql
+    state: stopped
+
+- name: Start mysql
+  service:
+    name: mysql
+    state: started

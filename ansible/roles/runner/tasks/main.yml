@@ -1,0 +1,34 @@
+---
+- name: Check if GitLab Runner is already installed
+  stat:
+    path: /etc/gitlab
+  register: gitlab
+
+- name: Download GitLab Runner Deb script
+  get_url:
+    url: https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh
+    dest: /tmp/gitlab-runner.deb.sh
+    mode: '777'
+  when: not gitlab.stat.exists
+
+- name: Uncomment a line os
+  lineinfile: 
+    path: /tmp/gitlab-runner.deb.sh
+    regexp: '(.*)$os="(.*)$'
+    line: 'os="ubuntu"'
+
+- name: Uncomment a line dist
+  lineinfile: 
+    dest: /tmp/gitlab-runner.deb.sh
+    regexp: '^(.*)dist="(.*)$'
+    line: 'dist="focal"'
+
+- name: Execute GitLab Runner Deb script
+  command: /bin/bash /tmp/gitlab-runner.deb.sh
+  when: not gitlab.stat.exists
+
+- name: Install GitLab Runner
+  package:
+    name: gitlab-runner
+    state: latest
+  register: gitlabupdate

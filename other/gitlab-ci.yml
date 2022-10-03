@@ -1,0 +1,18 @@
+before_script:
+  - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+  - eval $(ssh-agent -s)
+  - echo "$ssh_key" | tr -d '\r' | ssh-add - > /dev/null
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
+stages:         
+  - deploy
+
+deploy-job:      
+  stage: deploy
+  only:
+    - tags
+  script:
+    - ssh -o StrictHostKeyChecking=no ubuntu@192.168.101.13 sudo chown ubuntu /var/www/wordpress/ -R
+    - rsync -vz -e "ssh -o StrictHostKeyChecking=no" ./* ubuntu@192.168.101.13:/var/www/wordpress/
+    - ssh -o StrictHostKeyChecking=no ubuntu@192.168.101.13 sudo chown www-data /var/www/wordpress/ -R

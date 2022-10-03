@@ -1,0 +1,90 @@
+---
+- name: Install new nginx config file
+  template:
+    src: templates/proxy/nginx_le.conf.j2
+    dest: /etc/nginx/sites-available/devops-lso.ru
+    mode: '644'
+    backup: yes
+
+- name: Put reverse proxy site config in enabled
+  become: yes
+  file:
+    src: /etc/nginx/sites-available/devops-lso.ru
+    dest: /etc/nginx/sites-enabled/devops-lso.ru
+    state: link
+
+- name: Disable default site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+
+- name: "Create required directories in /etc/letsencrypt"
+  file:
+    path: "/etc/letsencrypt/{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '777'
+  with_items:
+    - live
+    - /live/devops-lso.ru
+
+- name: Install Let's Encrypt client
+  apt:
+    name=letsencrypt
+    state=latest
+
+- name: Add certbot repository 
+  apt_repository: 
+    repo: 'ppa:certbot/certbot'
+
+- name: Install Certbot's Nginx package 
+  apt: 
+    name: python-certbot-nginx 
+    state: present 
+
+- name: Check if certificate already exists. 
+  stat: 
+    path: /etc/letsencrypt/live/www.devops-lso.ru/cert.pem 
+  register: letsencrypt_cert
+
+- name: Stop nginx
+  service:
+    name: nginx
+    state: stopped
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+
+- name: Generate new certificate if one doesn't exist. 
+  shell: "certbot certonly --test-cert --webroot -w /etc/letsencrypt/live/devops-lso.ru --email sergh.lso@mail.ru --agree-tos --non-interactive -d www.devops-lso.ru -d devops-lso.ru -d gitlab.devops-lso.ru -d prometheus.devops-lso.ru -d grafana.devops-lso.ru -d alertmanager.devops-lso.ru"
+ #--test-cert
+  when: letsencrypt_cert.stat.exists == False
+
+- name: Install new nginx config file
+  template:
+    src: templates/proxy/nginx.conf.j2
+    dest: /etc/nginx/sites-available/devops-lso.ru
+    mode: '644'
+    backup: yes
+ 
+- name: Stop nginx
+  service:
+    name: nginx
+    state: stopped
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started
+
+- name: Add cron job for certbot renewal (if configured).
+  cron:
+    name: Certbot automatic renewal.
+    job: /usr/bin/certbot renew --quiet --no-self-upgrade >> /var/log/letsencrypt/renew.log
+    minute: "30"
+    hour: "3"
+    user: root
+  ignore_errors: yes

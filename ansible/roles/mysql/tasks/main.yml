@@ -1,0 +1,92 @@
+---
+- name: Install mysql server    
+  apt: 
+    name: mysql-server 
+    state: present
+
+- name: Install mysql client
+  apt:
+    name: mysql-client
+    state: present
+ 
+- name: Install pymysql3
+  apt:
+    name: python3-pymysql
+    state: present
+
+- name: Start and enable mysql service
+  service:
+    name: mysql
+    state: started
+    enabled: yes
+
+- name: Copy the my.cnf file
+  template:
+    src=my.cnf.j2
+    dest=/etc/mysql/my.cnf
+
+- name: Stop mysql
+  service:
+    name: mysql
+    state: stopped
+
+- name: Start mysql
+  service:
+    name: mysql
+    state: started
+
+- name: Set password for root user
+  mysql_user:
+    name: root
+    password: 12345
+    login_user: root
+    login_password: 12345
+    priv: '*.*:ALL,GRANT'
+    host: 'localhost'
+    check_implicit_admin: true
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+
+- name: Save root password in .my.cnf
+  template:
+    src: root_cnf.j2
+    dest: /root/.my.cnf
+    owner: root
+    mode: '0600'
+
+- name: Creating mysql user
+  mysql_user:
+    name: "wordpress"
+    password: "wordpress"
+    priv: '*.*:ALL'
+    host: '%'
+    state: present
+
+- name: Creating medium_db
+  mysql_db:
+    name: "wordpress"
+    state: present
+
+- name: Enable remote login to mysql
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address'
+    line: 'bind-address = 0.0.0.0'
+    backup: yes
+
+- name: Creating replicator user
+  mysql_user:
+    name: "replicator"
+    password: "12345"
+    priv: "*.*:REPLICATION SLAVE"
+    state: present
+
+- name: Stop mysql
+  service:
+    name: mysql
+    state: stopped
+
+- name: Start mysql
+  service:
+    name: mysql
+    state: started

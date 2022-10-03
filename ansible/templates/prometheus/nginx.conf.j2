@@ -1,0 +1,28 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    if ($request_method !~ ^(GET|HEAD|POST)$ )
+    {
+       return 405;
+    }
+
+    # Add Security Headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options nosniff;
+
+    server_name prometheus.devops-lso.ru;
+
+    # Redirect to HTTPS
+    return 301 https://$host$request_uri;
+
+    location / {
+        proxy_pass http://127.0.0.1:9090/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    
+}

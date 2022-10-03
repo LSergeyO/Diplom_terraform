@@ -1,0 +1,8 @@
+---
+  - name: Install nodeexporter
+    hosts: proxy db-master db-slave app gitlab runner monitoring
+    become: yes
+    become_user: root
+    remote_user: ubuntu
+    roles:
+      - nodeexporter

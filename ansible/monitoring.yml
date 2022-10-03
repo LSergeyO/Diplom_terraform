@@ -1,0 +1,12 @@
+---
+  - name: Install monitoring
+    hosts: monitoring
+    become: yes
+    become_user: root
+    remote_user: ubuntu
+    roles:
+      - nginx      
+      - prometheus
+      - grafana
+      - alertmanager
+      - ssh

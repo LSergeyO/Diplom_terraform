@@ -1,0 +1,36 @@
+---
+- name: Install php extensions
+  with_items:
+    - name: php
+    - name: php-cli
+    - name: php-common
+    - name: php-readline
+    - name: php-mysql
+    - name: php-gd
+    - name: php-curl
+    - name: php-mbstring
+    - name: php-json
+    - name: php-opcache
+    - name: php-fpm
+    - name: php-ssh2
+    - name: mcrypt
+  package:
+    pkg: "{{ item.name }}"
+    state: present
+
+- name: Setup php-fpm
+  replace: 
+    dest=/etc/php/8.1/fpm/php.ini 
+    regexp="(;cgi.fix_pathinfo=1)" 
+    replace="cgi.fix_pathinfo=0"
+  become: yes
+
+- name: Stop nginx
+  service:
+    name: nginx
+    state: stopped
+
+- name: Start nginx
+  service:
+    name: nginx
+    state: started

@@ -1,0 +1,15 @@
+---
+- name: Copy the my.cnf file
+  template:
+    src=my.cnf.master.j2
+    dest=/etc/mysql/my.cnf
+
+- name: Stop mysql
+  service:
+    name: mysql
+    state: stopped
+
+- name: Start mysql
+  service:
+    name: mysql
+    state: started

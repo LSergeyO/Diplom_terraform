@@ -1,0 +1,11 @@
+---
+  - name: Install Nginx and LetsEncrypt
+    hosts: app
+    become: yes
+    become_user: root
+    remote_user: ubuntu
+    roles:
+      - nginx
+      - wordpress
+      - php
+      - ssh  

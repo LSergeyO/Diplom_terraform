@@ -1,0 +1,144 @@
+server {
+    listen 80;
+    listen [::]:80;
+    server_name devops-lso.ru;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+
+    location / {
+      proxy_pass http://192.168.100.10;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root /etc/letsencrypt/live/devops-lso.ru;
+    }
+
+    location = /.well-known/acme-challenge/ {
+      return 404;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name www.devops-lso.ru;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+
+    location / {
+      proxy_pass http://192.168.101.13;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root /etc/letsencrypt/live/devops-lso.ru;
+    }
+
+    location = /.well-known/acme-challenge/ {
+      return 404;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name gitlab.devops-lso.ru;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+
+    location / {
+      proxy_pass http://192.168.101.14:8082;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root /etc/letsencrypt/live/devops-lso.ru;
+    }
+
+    location = /.well-known/acme-challenge/ {
+      return 404;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name prometheus.devops-lso.ru;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+
+    location / {
+      proxy_pass http://192.168.101.16:9090;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root /etc/letsencrypt/live/devops-lso.ru;
+    }
+
+    location = /.well-known/acme-challenge/ {
+      return 404;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name grafana.devops-lso.ru;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+
+    location / {
+      proxy_pass http://192.168.101.16:3000;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root /etc/letsencrypt/live/devops-lso.ru;
+    }
+
+    location = /.well-known/acme-challenge/ {
+      return 404;
+    }
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name alertmanager.devops-lso.ru;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_set_header Host $host;
+    proxy_cache_bypass $http_upgrade;
+
+    location / {
+      proxy_pass http://192.168.101.16:9093;
+    }
+
+    location ^~ /.well-known/acme-challenge/ {
+      default_type "text/plain";
+      root /etc/letsencrypt/live/devops-lso.ru;
+    }
+
+    location = /.well-known/acme-challenge/ {
+      return 404;
+    }
+}
+

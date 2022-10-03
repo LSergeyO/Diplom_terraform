@@ -1,0 +1,42 @@
+---
+- name: GitLab token
+  hosts: gitlab
+  remote_user: ubuntu
+  become: yes
+  become_user: root
+    
+  tasks:
+  - name: Obtain registration token
+    command: 'gitlab-rails runner -e production "puts Gitlab::CurrentSettings.current_application_settings.runners_registration_token"'
+    register: runners_registration_token
+  
+  - name: Set gitlab_runner_token
+    set_fact:
+      gitlab_runner_token: "{{ runners_registration_token.stdout }}"
+  
+  - name: Show token
+    debug:
+      msg: token {{ gitlab_runner_token }}
+
+  - name: Add variables to dummy host
+    add_host:
+      name: "variable_holder"
+      shared_variable:  "{{ gitlab_runner_token }}"
+
+- name: Runner
+  hosts: runner
+  remote_user: ubuntu
+  become: yes
+  become_user: root
+  vars:
+    token: "{{ hostvars['variable_holder']['shared_variable'] }}"
+ 
+  tasks:
+  - name: GitLab Runner | Register to GitLab
+    command: >
+      gitlab-runner register
+        --non-interactive
+        --url "http://192.168.101.14:8082"
+        --registration-token "{{ token }}"
+        --description "wordpress"
+        --executor "shell"
